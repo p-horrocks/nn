@@ -23,7 +23,7 @@ public:
     int loadEvaluationData();
     int loadTestData();
 
-//    int numImages();
+    const std::vector<ImagePtr>& images() const { return images_; }
 
 private:
     int loadData(

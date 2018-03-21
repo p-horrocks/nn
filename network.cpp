@@ -94,20 +94,14 @@ void Network::trainMNIST_SGD_batch(
 
         for(int l = 0; l < layers.size(); ++l)
         {
-            Layer& a = layers[i];
-            Layer& b = delta[i];
-            layers[i].add(delta[i]);
+            layers[l].add(delta[l]);
         }
     }
 
-//        for x, y in mini_batch:
-//            delta_nabla_b, delta_nabla_w = self.backprop(x, y)
-//            nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
-//            nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-//        self.weights = [w-(eta/len(mini_batch))*nw
-//                        for w, nw in zip(self.weights, nabla_w)]
-//        self.biases = [b-(eta/len(mini_batch))*nb
-//                       for b, nb in zip(self.biases, nabla_b)]
+    for(int l = 0; l < layers.size(); ++l)
+    {
+        layers_[l].update(layers[l], rate / (end - begin));
+    }
 }
 
 // Returns true if the network correctly outputs the image label

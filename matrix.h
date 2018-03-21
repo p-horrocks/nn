@@ -11,10 +11,16 @@ public:
     int rows() const { return rows_; }
     int cols() const { return cols_; }
     fpt value(int r, int c) const { return m_[c + (r * cols_)]; }
-
     void resize(int rows, int cols, bool randomise);
+
+    // Matrix multiplication by a vector
     fpt_vect multiply(const fpt_vect& a) const;
+
+    // Element-wise addition
     void add(const Matrix& a);
+
+    // As per Layer::update
+    void update(const Matrix&m, fpt factor);
 
 private:
     int rows_ = 0;

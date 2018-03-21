@@ -40,6 +40,14 @@ void Matrix::add(const Matrix& a)
     ::add(m_, a.m_);
 }
 
+void Matrix::update(const Matrix& m, fpt factor)
+{
+    for(int i = 0; i < m_.size(); ++i)
+    {
+        m_[i] -= factor * m.m_[i];
+    }
+}
+
 std::ostream& operator << (std::ostream& os, const Matrix& m)
 {
     for(int j = 0; j < m.rows(); ++j)

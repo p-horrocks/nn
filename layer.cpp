@@ -34,3 +34,13 @@ void Layer::add(const Layer& l)
     ::add(biases_, l.biases_);
     weights_.add(l.weights_);
 }
+
+void Layer::update(const Layer& l, fpt factor)
+{
+    for(int i = 0; i < biases_.size(); ++i)
+    {
+        biases_[i] -= factor * l.biases_[i];
+    }
+
+    weights_.update(l.weights_, factor);
+}

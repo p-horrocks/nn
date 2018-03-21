@@ -92,18 +92,31 @@ int Mnist::loadData(
 
     for(int i = 0; i < maxImages; ++i)
     {
-        auto image = std::make_shared<Image>();
-
         uint8_t label;
         lbl.read(reinterpret_cast<char*>(&label), 1);
-        image->label = label;
-        image->rows  = rows;
-        image->cols  = cols;
-        image->data.resize(rows * cols);
-        img.read(reinterpret_cast<char*>(image->data.data()), image->data.size());
+
+        std::vector<uint8_t> data(rows * cols);
+        img.read(reinterpret_cast<char*>(data.data()), data.size());
 
         if((lbl.gcount() == 0) || (img.gcount() == 0) || lbl.eof() || img.eof())
             break;
+
+        auto image  = std::make_shared<Image>();
+        image->rows = rows;
+        image->cols = cols;
+
+        // Convert the label into a 10 element vector with the corresponding
+        // value being the only one set. This is the expected output from the
+        // network
+        image->label.resize(10, 0.f);
+        image->label[label] = 1.f;
+
+        // Convert each pixel value to a float for the network
+        image->data.resize(rows * cols);
+        for(int i = 0; i < data.size(); ++i)
+        {
+            image->data[i] = data[i] / 255.f;
+        }
 
         images_.push_back(image);
     }

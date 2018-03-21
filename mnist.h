@@ -5,6 +5,8 @@
 #include <memory>
 #include <vector>
 
+#include "type.h"
+
 class Mnist
 {
 public:
@@ -12,8 +14,8 @@ public:
     {
         int rows;
         int cols;
-        int label;
-        std::vector<uint8_t> data;
+        std::vector<fpt> data;
+        std::vector<fpt> label;
     };
     typedef std::shared_ptr<Image> ImagePtr;
 

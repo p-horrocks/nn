@@ -3,29 +3,21 @@
 
 #include "matrix.h"
 
-template<typename T>
 class Layer
 {
 public:
-    Layer(int numNeurons, int numInputs)
-    {
-        biases_.resize(numNeurons);
-        std::generate(biases_.begin(), biases_.end(), &normalRand);
+    Layer(int numNeurons, int numInputs, bool randomise);
 
-        weights_.resize(numNeurons, numInputs);
-    }
+    fpt_vect forward(const fpt_vect& input) const;
 
-    std::vector<T> forward(const std::vector<T>& input) const
-    {
-        auto output = weights_.multiply(input);
-        add(output, biases_);
-        sigmoid(output);
-        return output;
-    }
+    // Create a layer on the same size but all zero weights and biases
+    Layer zeroCopy() const;
+
+    void add(const Layer& l);
 
 private:
-    std::vector<T> biases_;
-    Matrix<T> weights_;
+    fpt_vect biases_;
+    Matrix weights_;
 };
 
 #endif // LAYER_H

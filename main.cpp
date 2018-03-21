@@ -16,7 +16,7 @@ int main()
 
     // Single layer NN to take in the MNIST images and generate 10 outputs -
     // the probability that each image is a corresponding digit
-    Network<float> net({784, 30, 10});
+    Network net({784, 30, 10});
 
     net.trainMNIST_SGD(30, 10, 3.f, train, test);
 

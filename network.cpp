@@ -20,12 +20,13 @@ Network::Network(const std::initializer_list<fpt>& init)
 
 fpt_vect Network::forward(const fpt_vect& input) const
 {
-    auto output = input;
+    Matrix a;
+    a.fromVector(input);
     for(auto i = layers_.begin(); i != layers_.end(); ++i)
     {
-        output = i->forward(output);
+        a = i->forward(a);
     }
-    return output;
+    return a.toVector();
 }
 
 std::vector<Layer> Network::backward(
@@ -45,14 +46,16 @@ std::vector<Layer> Network::backward(
     activations.push_back(a);
     for(auto l = layers_.begin(); l != layers_.end(); ++l)
     {
-        a = l->forward(a, &z);
-        zVectors.push_back(z);
-        activations.push_back(a);
+        //remove-me
+//        a = l->forward(a, &z);
+//        zVectors.push_back(z);
+//        activations.push_back(a);
     }
 
     auto delta = z;
-    ::sigmoidPrime(delta);
-    ::dot(delta, costDerivative(a, output));
+    //remove-me
+//    ::sigmoidPrime(delta);
+//    ::dot(delta, costDerivative(a, output));
 
     // Point to second-last layer
     auto l = activations.rbegin();
@@ -63,7 +66,7 @@ std::vector<Layer> Network::backward(
     //retval.back().setWeights();
 
     return retval;
-/*
+/*remove-me
         # backward pass
         delta = self.cost_derivative(activations[-1], y) * \
             sigmoid_prime(zs[-1])
@@ -105,7 +108,7 @@ void Network::trainMNIST_SGD(
         while(batchStart < in.size())
         {
             int batchEnd = std::min<int>(in.size(), batchStart + batchSize);
-            trainMNIST_SGD_batch(in.begin() + batchStart, in.begin() + batchEnd, rate);
+//remove-me            trainMNIST_SGD_batch(in.begin() + batchStart, in.begin() + batchEnd, rate);
             batchStart = batchEnd;
         }
 

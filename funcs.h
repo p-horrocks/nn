@@ -9,12 +9,8 @@
 #include "type.h"
 
 fpt normalRand();
-
 fpt sigmoid(fpt z);
-void sigmoid(fpt_vect& a);
-
 fpt sigmoidPrime(fpt z);
-void sigmoidPrime(fpt_vect& a);
 
 void add(fpt_vect& r, const fpt_vect& v);
 void sub(fpt_vect& r, const fpt_vect& v);

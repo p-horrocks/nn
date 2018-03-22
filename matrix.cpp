@@ -36,6 +36,12 @@ void Matrix::fromVector(const fpt_vect& v)
     std::copy(v.begin(), v.end(), m_.begin());
 }
 
+fpt_vect Matrix::toVector() const
+{
+    assert(cols_ == 1);
+    return m_;
+}
+
 void Matrix::transpose()
 {
     auto m = m_;
@@ -72,6 +78,7 @@ Matrix Matrix::multiply(const Matrix& a) const
     return retval;
 }
 
+/*remove-me
 fpt_vect Matrix::multiply(const fpt_vect& a) const
 {
     // Implements V = a.M
@@ -89,12 +96,18 @@ fpt_vect Matrix::multiply(const fpt_vect& a) const
     }
     return retval;
 }
+*/
 
 void Matrix::add(const Matrix& a)
 {
     assert(rows_ == a.rows_);
     assert(cols_ == a.cols_);
     ::add(m_, a.m_);
+}
+
+void Matrix::sigmoid()
+{
+    std::transform(m_.begin(), m_.end(), m_.begin(), &::sigmoid);
 }
 
 void Matrix::update(const Matrix& m, fpt factor)

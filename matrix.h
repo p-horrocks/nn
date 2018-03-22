@@ -19,6 +19,7 @@ public:
 
     // Create a single column matrix from the vector
     void fromVector(const fpt_vect& v);
+    fpt_vect toVector() const;
 
     // Transpose this matrix
     void transpose();
@@ -27,10 +28,11 @@ public:
     Matrix multiply(const Matrix& a) const;
 
     // Matrix multiplication by a vector
-    fpt_vect multiply(const fpt_vect& a) const;
+    //remove-me fpt_vect multiply(const fpt_vect& a) const;
 
-    // Element-wise addition
+    // Element-wise operations
     void add(const Matrix& a);
+    void sigmoid();
 
     // As per Layer::update
     void update(const Matrix&m, fpt factor);

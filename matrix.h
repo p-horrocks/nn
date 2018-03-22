@@ -10,14 +10,21 @@ public:
 
     int rows() const { return rows_; }
     int cols() const { return cols_; }
+
     fpt value(int r, int c) const { return m_[c + (r * cols_)]; }
+    void set(int r, int c, fpt v);
+
     void resize(int rows, int cols, bool randomise);
+    void resize(int rows, int cols, const std::initializer_list<fpt>& init);
 
     // Create a single column matrix from the vector
     void fromVector(const fpt_vect& v);
 
     // Transpose this matrix
     void transpose();
+
+    // Matrix multiplication. Returns this.a
+    Matrix multiply(const Matrix& a) const;
 
     // Matrix multiplication by a vector
     fpt_vect multiply(const fpt_vect& a) const;

@@ -1,5 +1,10 @@
 #include "matrix.h"
 
+void Matrix::set(int r, int c, fpt v)
+{
+    m_[c + (r * cols_)] = v;
+}
+
 void Matrix::resize(int rows, int cols, bool randomise)
 {
     rows_ = rows;
@@ -13,6 +18,16 @@ void Matrix::resize(int rows, int cols, bool randomise)
     {
         std::fill(m_.begin(), m_.end(), (fpt)0);
     }
+}
+
+void Matrix::resize(int rows, int cols, const std::initializer_list<fpt>& init)
+{
+    rows_ = rows;
+    cols_ = cols;
+    m_.resize(rows * cols);
+
+    assert((init.end() - init.begin()) == m_.size());
+    std::copy(init.begin(), init.end(), m_.begin());
 }
 
 void Matrix::fromVector(const fpt_vect& v)
@@ -30,14 +45,31 @@ void Matrix::transpose()
         int x = i % cols_;
         int y = i / cols_;
         int n = y + (x * rows_);
-        //remove-me
-        std::cout
-                << "XXX " << i << " (" << x << ", " << y << ") -> ("
-                << y << ", " << x << ") " << n << " :" << m[n]
-                << std::endl;
-
         m_[i] = m[n];
     }
+}
+
+Matrix Matrix::multiply(const Matrix& a) const
+{
+    assert(cols_ == a.rows_);
+
+    Matrix retval;
+    retval.resize(rows_, a.cols_, false);
+
+    for(int j = 0; j < a.cols_; ++j)
+    {
+        for(int i = 0; i < rows_; ++i)
+        {
+            fpt v = 0;
+            for(int n = 0; n < cols_; ++n)
+            {
+                v += value(i, n) * a.value(n, j);
+            }
+            retval.set(i, j, v);
+        }
+    }
+
+    return retval;
 }
 
 fpt_vect Matrix::multiply(const fpt_vect& a) const

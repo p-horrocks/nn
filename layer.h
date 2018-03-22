@@ -8,14 +8,21 @@ class Layer
 public:
     Layer(int numNeurons, int numInputs, bool randomise);
 
-    void setBiases(const fpt_vect& v);
+    const Matrix& biases() const { return biases_; }
+    void setBiases(const Matrix& v);
+
+    const Matrix& weights() const { return weights_; }
+    void setWeights(const Matrix& v);
+
+    int size() const   { return weights_.rows(); }
+    int inputs() const { return weights_.cols(); }
 
     // Feed the input forward through this layer and return the output. If the
     // z parameter is provided then it will be filled in with the output values
     // before the sigmoid function has been applied.
     //
     // The input and output matrices will be a single column
-    Matrix forward(const Matrix& input, fpt_vect* z = nullptr) const;
+    Matrix forward(const Matrix& input, Matrix* z = nullptr) const;
 
     // Create a layer on the same size but all zero weights and biases
     Layer zeroCopy() const;
@@ -33,5 +40,7 @@ private:
     Matrix biases_;
     Matrix weights_;
 };
+
+std::ostream& operator << (std::ostream& os, const Layer& l);
 
 #endif // LAYER_H

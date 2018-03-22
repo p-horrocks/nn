@@ -25,7 +25,8 @@ fpt sigmoid(fpt z)
 
 fpt sigmoidPrime(fpt z)
 {
-    return sigmoid(z) * ((fpt)1 - sigmoid(z));
+    fpt s = sigmoid(z);
+    return s * ((fpt)1 - s);
 }
 
 void add(fpt_vect& r, const fpt_vect& v)

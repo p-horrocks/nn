@@ -1,5 +1,13 @@
 #include "matrix.h"
 
+Matrix::Matrix(const Matrix& o)
+{
+    rows_ = o.rows_;
+    cols_ = o.cols_;
+    m_.resize(rows_ * cols_);
+    std::copy(o.m_.begin(), o.m_.end(), m_.begin());
+}
+
 void Matrix::set(int r, int c, fpt v)
 {
     m_[c + (r * cols_)] = v;
@@ -42,17 +50,21 @@ fpt_vect Matrix::toVector() const
     return m_;
 }
 
-void Matrix::transpose()
+Matrix Matrix::transpose() const
 {
-    auto m = m_;
-    std::swap(rows_, cols_);
-    for(int i = 0; i < m_.size(); ++i)
+    Matrix retval;
+    retval.resize(cols_, rows_,false);
+
+    for(int j = 0; j < cols_; ++j)
     {
-        int x = i % cols_;
-        int y = i / cols_;
-        int n = y + (x * rows_);
-        m_[i] = m[n];
+        for(int i = 0; i < rows_; ++i)
+        {
+            fpt v = value(i, j);
+            retval.set(j, i, v);
+        }
     }
+
+    return retval;
 }
 
 Matrix Matrix::multiply(const Matrix& a) const
@@ -78,26 +90,6 @@ Matrix Matrix::multiply(const Matrix& a) const
     return retval;
 }
 
-/*remove-me
-fpt_vect Matrix::multiply(const fpt_vect& a) const
-{
-    // Implements V = a.M
-    // Where M is this matrix
-    assert(a.size() == cols_);
-    fpt_vect retval(rows_);
-    for(int i = 0; i < rows_; ++i)
-    {
-        fpt v = 0.f;
-        for(int j = 0; j < cols_; ++j)
-        {
-            v += a[j] * m_[j + (i * cols_)];
-        }
-        retval[i] = v;
-    }
-    return retval;
-}
-*/
-
 void Matrix::add(const Matrix& a)
 {
     assert(rows_ == a.rows_);
@@ -105,16 +97,15 @@ void Matrix::add(const Matrix& a)
     ::add(m_, a.m_);
 }
 
-void Matrix::sigmoid()
+void Matrix::apply(const std::function<fpt (int, int, fpt)>& f)
 {
-    std::transform(m_.begin(), m_.end(), m_.begin(), &::sigmoid);
-}
-
-void Matrix::update(const Matrix& m, fpt factor)
-{
-    for(int i = 0; i < m_.size(); ++i)
+    int n = 0;
+    for(int j = 0; j < cols_; ++j)
     {
-        m_[i] -= factor * m.m_[i];
+        for(int i = 0; i < rows_; ++i, ++n)
+        {
+            m_[n] = f(i, j, m_[n]);
+        }
     }
 }
 

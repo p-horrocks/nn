@@ -6,24 +6,29 @@ Layer::Layer(int numNeurons, int numInputs, bool randomise)
     weights_.resize(numNeurons, numInputs, randomise);
 }
 
-void Layer::setBiases(const fpt_vect& v)
+void Layer::setBiases(const Matrix& v)
 {
-    assert(0);
-//    assert(v.size() == biases_.size());
-//    std::copy(v.begin(), v.end(), biases_.begin());
+    assert(v.rows() == biases_.rows());
+    assert(v.cols() == biases_.cols());
+    biases_ = v;
 }
 
-Matrix Layer::forward(const Matrix& input, fpt_vect* z) const
+void Layer::setWeights(const Matrix& v)
+{
+    assert(v.rows() == weights_.rows());
+    assert(v.cols() == weights_.cols());
+    weights_ = v;
+}
+
+Matrix Layer::forward(const Matrix& input, Matrix* z) const
 {
     auto output = weights_.multiply(input);
     output.add(biases_);
     if(z)
     {
-        assert(0);
-//        z->resize(output.size());
-//        std::copy(output.begin(), output.end(), z->begin());
+        *z = output;
     }
-    output.sigmoid();
+    output.apply([](int, int, fpt v){ return ::sigmoid(v); });
     return output;
 }
 
@@ -41,6 +46,25 @@ void Layer::add(const Layer& l)
 
 void Layer::update(const Layer& l, fpt factor)
 {
-    biases_.update(l.biases_, factor);
-    weights_.update(l.weights_, factor);
+    auto b = [&](int r, int c, fpt v){ return v - (factor * l.biases_.value(r, c)); };
+    auto w = [&](int r, int c, fpt v){ return v - (factor * l.weights_.value(r, c)); };
+    biases_.apply(b);
+    weights_.apply(w);
+}
+
+std::ostream& operator << (std::ostream& os, const Layer& l)
+{
+    const auto& b = l.biases();
+    const auto& w = l.weights();
+    assert(b.rows() == w.rows());
+    for(int j = 0; j < b.rows(); ++j)
+    {
+        os << "[ " << b.value(j, 0) << " ] [ ";
+        for(int i = 0; i < w.cols(); ++i)
+        {
+            os << w.value(j, i) << " ";
+        }
+        os << "]" << std::endl;
+    }
+    return os;
 }

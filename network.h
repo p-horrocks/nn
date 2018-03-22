@@ -40,9 +40,6 @@ public:
     // Returns a network with the same shape, but all zero weights and biases
     std::vector<Layer> zeroCopy() const;
 
-    // Return the vector of partial derivatives for the output vector
-    fpt_vect costDerivative(const fpt_vect& output, const fpt_vect& expected) const;
-
 private:
     std::vector<Layer> layers_;
 };

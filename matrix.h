@@ -1,12 +1,15 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include <functional>
+
 #include "funcs.h"
 
 class Matrix
 {
 public:
     Matrix() {}
+    Matrix(const Matrix& o);
 
     int rows() const { return rows_; }
     int cols() const { return cols_; }
@@ -21,21 +24,18 @@ public:
     void fromVector(const fpt_vect& v);
     fpt_vect toVector() const;
 
-    // Transpose this matrix
-    void transpose();
+    // Return the transpose of this matrix
+    Matrix transpose() const;
 
     // Matrix multiplication. Returns this.a
     Matrix multiply(const Matrix& a) const;
 
-    // Matrix multiplication by a vector
-    //remove-me fpt_vect multiply(const fpt_vect& a) const;
+    // Element-wise addition
+    void add(const Matrix& m);
 
-    // Element-wise operations
-    void add(const Matrix& a);
-    void sigmoid();
-
-    // As per Layer::update
-    void update(const Matrix&m, fpt factor);
+    // Apply a function per-element. The return value of the function is
+    // assigned to each element. Function takes in row, column, value
+    void apply(const std::function<fpt (int, int, fpt)>& f);
 
 private:
     int rows_ = 0;

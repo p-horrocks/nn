@@ -1,6 +1,38 @@
 #include "network.h"
 
-#include <list>
+namespace
+{
+
+// Functor object to assis during training
+class Trainer
+{
+public:
+    Trainer(
+            const Matrix& a, // activations
+            const Matrix& z, // z vector
+            const fpt_vect& o  // expected output
+            ) :
+        a_(a),
+        z_(z),
+        o_(o)
+    {
+    }
+
+    fpt operator () (int r, int c, fpt)
+    {
+        fpt a = a_.value(r, c);
+        fpt z = z_.value(r, c);
+        fpt o = o_[r];
+        return (a - o) * ::sigmoidPrime(z);
+    }
+
+private:
+    const Matrix& a_;
+    const Matrix& z_;
+    const fpt_vect& o_;
+};
+
+} // namespace
 
 Network::Network(const std::initializer_list<fpt>& init)
 {
@@ -37,55 +69,48 @@ std::vector<Layer> Network::backward(
     // Feed the input forward through the network, recording the layer
     // activations as we go, as well as the z vectors (the layer output before
     // sigmoid is applied)
-    std::list<fpt_vect> activations;
-    std::list<fpt_vect> zVectors;
+    const int numLayers = layers_.size();
+    std::vector<Matrix> activations;
+    std::vector<Matrix> zVectors;
+    activations.resize(numLayers + 1);
+    zVectors.resize(numLayers);
 
-    // Feed-forward pass
-    fpt_vect z;
-    auto a = input;
-    activations.push_back(a);
-    for(auto l = layers_.begin(); l != layers_.end(); ++l)
+    // Feed-forward pass. This will record the activation and z vectors for
+    // all the layers
+    activations[0].fromVector(input);
+    for(int l = 0; l < numLayers; ++l)
     {
-        //remove-me
-//        a = l->forward(a, &z);
-//        zVectors.push_back(z);
-//        activations.push_back(a);
+        activations[l + 1] = layers_[l].forward(activations[l], &zVectors[l]);
     }
 
-    auto delta = z;
-    //remove-me
-//    ::sigmoidPrime(delta);
-//    ::dot(delta, costDerivative(a, output));
-
-    // Point to second-last layer
-    auto l = activations.rbegin();
-    ++l;
-
     auto retval = zeroCopy();
-    retval.back().setBiases(delta);
-    //retval.back().setWeights();
+    //remove-me
+//    std::cout << retval.back().size() << " " << retval.back().inputs() << std::endl;
+//    exit(0);
+
+    Matrix delta;
+    for(int i = numLayers - 1; i >= 0; --i)
+    {
+        if(i == numLayers - 1)
+        {
+            delta.resize(activations[i + 1].rows(), 1, false);
+            delta.apply(Trainer(activations[i + 1], zVectors[i], output));
+        }
+        else
+        {
+            auto sp = zVectors[i];
+            sp.apply([](int,int,fpt v){ return sigmoidPrime(v); });
+
+            auto l = layers_[i + 1].weights().transpose();
+            delta  = l.multiply(delta);
+            delta.apply([&](int r, int c, fpt v){ return v * sp.value(r, c); });
+        }
+
+        retval[i].setBiases(delta);
+        retval[i].setWeights(delta.multiply(activations[i].transpose()));
+    }
 
     return retval;
-/*remove-me
-        # backward pass
-        delta = self.cost_derivative(activations[-1], y) * \
-            sigmoid_prime(zs[-1])
-        nabla_b[-1] = delta
-        nabla_w[-1] = np.dot(delta, activations[-2].transpose())
-        # Note that the variable l in the loop below is used a little
-        # differently to the notation in Chapter 2 of the book.  Here,
-        # l = 1 means the last layer of neurons, l = 2 is the
-        # second-last layer, and so on.  It's a renumbering of the
-        # scheme in the book, used here to take advantage of the fact
-        # that Python can use negative indices in lists.
-        for l in xrange(2, self.num_layers):
-            z = zs[-l]
-            sp = sigmoid_prime(z)
-            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
-            nabla_b[-l] = delta
-            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
-        return (nabla_b, nabla_w)
-*/
 }
 
 // Train the network using stochastic gradient descent
@@ -108,7 +133,7 @@ void Network::trainMNIST_SGD(
         while(batchStart < in.size())
         {
             int batchEnd = std::min<int>(in.size(), batchStart + batchSize);
-//remove-me            trainMNIST_SGD_batch(in.begin() + batchStart, in.begin() + batchEnd, rate);
+            trainMNIST_SGD_batch(in.begin() + batchStart, in.begin() + batchEnd, rate);
             batchStart = batchEnd;
         }
 
@@ -175,12 +200,5 @@ std::vector<Layer> Network::zeroCopy() const
 
     assert(retval.size() == layers_.size());
     assert(!retval.empty());
-    return retval;
-}
-
-fpt_vect Network::costDerivative(const fpt_vect& output, const fpt_vect& expected) const
-{
-    auto retval = output;
-    ::sub(retval, expected);
     return retval;
 }

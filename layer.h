@@ -8,7 +8,12 @@ class Layer
 public:
     Layer(int numNeurons, int numInputs, bool randomise);
 
-    fpt_vect forward(const fpt_vect& input) const;
+    void setBiases(const fpt_vect& v);
+
+    // Feed the input forward through this layer and return the output. If the
+    // z parameter is provided then it will be filled in with the output values
+    // before the sigmoid function has been applied
+    fpt_vect forward(const fpt_vect& input, fpt_vect* z = nullptr) const;
 
     // Create a layer on the same size but all zero weights and biases
     Layer zeroCopy() const;

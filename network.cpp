@@ -1,5 +1,7 @@
 #include "network.h"
 
+#include <list>
+
 Network::Network(const std::initializer_list<fpt>& init)
 {
     layers_.reserve(init.end() - init.begin());
@@ -26,12 +28,61 @@ fpt_vect Network::forward(const fpt_vect& input) const
     return output;
 }
 
-void Network::backward(
-        const fpt_vect&     input,
-        const fpt_vect&     output,
-        std::vector<Layer>& delta
+std::vector<Layer> Network::backward(
+        const fpt_vect& input,
+        const fpt_vect& output
         ) const
 {
+    // Feed the input forward through the network, recording the layer
+    // activations as we go, as well as the z vectors (the layer output before
+    // sigmoid is applied)
+    std::list<fpt_vect> activations;
+    std::list<fpt_vect> zVectors;
+
+    // Feed-forward pass
+    fpt_vect z;
+    auto a = input;
+    activations.push_back(a);
+    for(auto l = layers_.begin(); l != layers_.end(); ++l)
+    {
+        a = l->forward(a, &z);
+        zVectors.push_back(z);
+        activations.push_back(a);
+    }
+
+    auto delta = z;
+    ::sigmoidPrime(delta);
+    ::dot(delta, costDerivative(a, output));
+
+    // Point to second-last layer
+    auto l = activations.rbegin();
+    ++l;
+
+    auto retval = zeroCopy();
+    retval.back().setBiases(delta);
+    //retval.back().setWeights();
+
+    return retval;
+/*
+        # backward pass
+        delta = self.cost_derivative(activations[-1], y) * \
+            sigmoid_prime(zs[-1])
+        nabla_b[-1] = delta
+        nabla_w[-1] = np.dot(delta, activations[-2].transpose())
+        # Note that the variable l in the loop below is used a little
+        # differently to the notation in Chapter 2 of the book.  Here,
+        # l = 1 means the last layer of neurons, l = 2 is the
+        # second-last layer, and so on.  It's a renumbering of the
+        # scheme in the book, used here to take advantage of the fact
+        # that Python can use negative indices in lists.
+        for l in xrange(2, self.num_layers):
+            z = zs[-l]
+            sp = sigmoid_prime(z)
+            delta = np.dot(self.weights[-l+1].transpose(), delta) * sp
+            nabla_b[-l] = delta
+            nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
+        return (nabla_b, nabla_w)
+*/
 }
 
 // Train the network using stochastic gradient descent
@@ -54,7 +105,7 @@ void Network::trainMNIST_SGD(
         while(batchStart < in.size())
         {
             int batchEnd = std::min<int>(in.size(), batchStart + batchSize);
-            trainMNIST_SGD_batch(in.begin() + batchStart, in.end() + batchEnd, rate);
+            trainMNIST_SGD_batch(in.begin() + batchStart, in.begin() + batchEnd, rate);
             batchStart = batchEnd;
         }
 
@@ -79,18 +130,14 @@ void Network::trainMNIST_SGD_batch(
         )
 {
     // Create layers for the back-propagation
-    std::vector<Layer> layers;
-    zeroCopy(layers);
+    auto layers = zeroCopy();
 
     // In the python version, the (x, y) tuples in mini_batches have x as
     // the image data (a 784 element vector) and y as the expected output
     // (a 10 elementvector with all zeros except a single 1)
     for(auto i = begin; i != end; ++i)
     {
-        std::vector<Layer> delta;
-        zeroCopy(delta);
-
-        backward((*i)->data, (*i)->label, delta);
+        auto delta = backward((*i)->data, (*i)->label);
 
         for(int l = 0; l < layers.size(); ++l)
         {
@@ -112,13 +159,25 @@ bool Network::evaluate(const Mnist::ImagePtr& img) const
     return std::equal(output.begin(), output.end(), img->label.begin());
 }
 
-void Network::zeroCopy(std::vector<Layer>& layers) const
+std::vector<Layer> Network::zeroCopy() const
 {
     // Create a vector of layers that match ourselves, but with all zero
     // weights and biases
-    layers.reserve(layers_.size());
+    std::vector<Layer> retval;
+    retval.reserve(layers_.size());
     for(auto i = layers_.begin(); i != layers_.end(); ++i)
     {
-        layers.push_back(i->zeroCopy());
+        retval.push_back(i->zeroCopy());
     }
+
+    assert(retval.size() == layers_.size());
+    assert(!retval.empty());
+    return retval;
+}
+
+fpt_vect Network::costDerivative(const fpt_vect& output, const fpt_vect& expected) const
+{
+    auto retval = output;
+    ::sub(retval, expected);
+    return retval;
 }

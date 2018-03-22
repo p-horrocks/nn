@@ -9,11 +9,13 @@ class Network
 public:
     Network(const std::initializer_list<fpt>& init);
 
+    // Evaluates the network output for the given input
     fpt_vect forward(const fpt_vect& input) const;
-    void backward(
-            const fpt_vect&     input,
-            const fpt_vect&     output,
-            std::vector<Layer>& delta
+
+    // Caculate the gradient of the cost function
+    std::vector<Layer> backward(
+            const fpt_vect& input,
+            const fpt_vect& output
             ) const;
 
     // Train the network using stochastic gradient descent
@@ -35,7 +37,11 @@ public:
     // Returns true if the network correctly outputs the image label
     bool evaluate(const Mnist::ImagePtr& img) const;
 
-    void zeroCopy(std::vector<Layer>& layers) const;
+    // Returns a network with the same shape, but all zero weights and biases
+    std::vector<Layer> zeroCopy() const;
+
+    // Return the vector of partial derivatives for the output vector
+    fpt_vect costDerivative(const fpt_vect& output, const fpt_vect& expected) const;
 
 private:
     std::vector<Layer> layers_;

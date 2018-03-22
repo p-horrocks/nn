@@ -13,6 +13,12 @@ public:
     fpt value(int r, int c) const { return m_[c + (r * cols_)]; }
     void resize(int rows, int cols, bool randomise);
 
+    // Create a single column matrix from the vector
+    void fromVector(const fpt_vect& v);
+
+    // Transpose this matrix
+    void transpose();
+
     // Matrix multiplication by a vector
     fpt_vect multiply(const fpt_vect& a) const;
 

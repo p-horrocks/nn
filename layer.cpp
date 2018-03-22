@@ -15,10 +15,21 @@ Layer::Layer(int numNeurons, int numInputs, bool randomise)
     weights_.resize(numNeurons, numInputs, randomise);
 }
 
-fpt_vect Layer::forward(const fpt_vect& input) const
+void Layer::setBiases(const fpt_vect& v)
+{
+    assert(v.size() == biases_.size());
+    std::copy(v.begin(), v.end(), biases_.begin());
+}
+
+fpt_vect Layer::forward(const fpt_vect& input, fpt_vect* z) const
 {
     auto output = weights_.multiply(input);
     ::add(output, biases_);
+    if(z)
+    {
+        z->resize(output.size());
+        std::copy(output.begin(), output.end(), z->begin());
+    }
     sigmoid(output);
     return output;
 }

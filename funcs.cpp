@@ -23,20 +23,37 @@ fpt sigmoid(fpt z)
     return (fpt)1 / ((fpt)1 + std::exp(-z));
 }
 
+void sigmoid(fpt_vect& a)
+{
+    std::transform(a.begin(), a.end(), a.begin(), [](fpt n){return sigmoid(n);});
+}
+
 fpt sigmoidPrime(fpt z)
 {
     return sigmoid(z) * ((fpt)1 - sigmoid(z));
 }
 
-void sigmoid(fpt_vect& a)
+void sigmoidPrime(fpt_vect& a)
 {
-    std::transform(a.begin(), a.end(), a.begin(), [](fpt n){return sigmoid(n);});
+    std::transform(a.begin(), a.end(), a.begin(), [](fpt n){return sigmoidPrime(n);});
 }
 
 void add(fpt_vect& r, const fpt_vect& v)
 {
     assert(r.size() == v.size());
     std::transform(r.begin(), r.end(), v.begin(), r.begin(), [](fpt a, fpt b){return (a + b);});
+}
+
+void sub(fpt_vect& r, const fpt_vect& v)
+{
+    assert(r.size() == v.size());
+    std::transform(r.begin(), r.end(), v.begin(), r.begin(), [](fpt a, fpt b){return (a - b);});
+}
+
+void dot(fpt_vect& r, const fpt_vect& v)
+{
+    assert(r.size() == v.size());
+    std::transform(r.begin(), r.end(), v.begin(), r.begin(), [](fpt a, fpt b){return (a * b);});
 }
 
 void hardMax(fpt_vect& a)

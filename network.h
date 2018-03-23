@@ -9,6 +9,8 @@ class Network
 public:
     Network(const std::initializer_list<fpt>& init);
 
+    void setLayer(int idx, const Matrix& biases, const Matrix& weights);
+
     // Evaluates the network output for the given input
     fpt_vect forward(const fpt_vect& input) const;
 
@@ -16,6 +18,15 @@ public:
     std::vector<Layer> backward(
             const fpt_vect& input,
             const fpt_vect& output
+            ) const;
+
+    void testBack(
+            const Matrix& nabla_b1,
+            const Matrix& nabla_w1,
+            const Matrix& nabla_b2,
+            const Matrix& nabla_w2,
+            const Matrix& x,
+            const Matrix& y
             ) const;
 
     // Train the network using stochastic gradient descent

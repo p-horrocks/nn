@@ -13,6 +13,13 @@ void Matrix::set(int r, int c, fpt v)
     m_[c + (r * cols_)] = v;
 }
 
+void Matrix::appendRow(const fpt_vect& row)
+{
+    assert(row.size() == cols_);
+    ++rows_;
+    m_.insert(m_.end(), row.begin(), row.end());
+}
+
 void Matrix::resize(int rows, int cols, bool randomise)
 {
     rows_ = rows;
@@ -107,6 +114,22 @@ void Matrix::apply(const std::function<fpt (int, int, fpt)>& f)
             m_[n] = f(i, j, m_[n]);
         }
     }
+}
+
+bool Matrix::isEqual(const Matrix* o, fpt eps) const
+{
+    if(o->rows_ != rows_)
+        return false;
+
+    if(o->cols_ != cols_)
+        return false;
+
+    for(int i = 0; i < m_.size(); ++i)
+    {
+        if(std::fabs(m_[i] - o->m_[i]) > eps)
+            return false;
+    }
+    return true;
 }
 
 std::ostream& operator << (std::ostream& os, const Matrix& m)

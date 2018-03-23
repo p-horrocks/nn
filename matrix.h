@@ -17,6 +17,8 @@ public:
     fpt value(int r, int c) const { return m_[c + (r * cols_)]; }
     void set(int r, int c, fpt v);
 
+    void appendRow(const fpt_vect& row);
+
     void resize(int rows, int cols, bool randomise);
     void resize(int rows, int cols, const std::initializer_list<fpt>& init);
 
@@ -36,6 +38,8 @@ public:
     // Apply a function per-element. The return value of the function is
     // assigned to each element. Function takes in row, column, value
     void apply(const std::function<fpt (int, int, fpt)>& f);
+
+    bool isEqual(const Matrix* o, fpt eps = 1e-10) const;
 
 private:
     int rows_ = 0;

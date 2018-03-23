@@ -3,14 +3,14 @@
 namespace
 {
 
-// Functor object to assis during training
-class Trainer
+// Functor object to assist during training
+class CostDerivative
 {
 public:
-    Trainer(
-            const Matrix& a, // activations
-            const Matrix& z, // z vector
-            const fpt_vect& o  // expected output
+    CostDerivative(
+            const Matrix& a,  // activations
+            const Matrix& z,  // z vector
+            const fpt_vect& o // expected output
             ) :
         a_(a),
         z_(z),
@@ -50,6 +50,13 @@ Network::Network(const std::initializer_list<fpt>& init)
     }
 }
 
+void Network::setLayer(int idx, const Matrix& biases, const Matrix& weights)
+{
+    assert((idx >= 0 &&) (idx < layers_.size()));
+    layers_[idx].setBiases(biases);
+    layers_[idx].setWeights(weights);
+}
+
 fpt_vect Network::forward(const fpt_vect& input) const
 {
     Matrix a;
@@ -66,24 +73,28 @@ std::vector<Layer> Network::backward(
         const fpt_vect& output
         ) const
 {
+    auto retval = zeroCopy();
+
     // Feed the input forward through the network, recording the layer
     // activations as we go, as well as the z vectors (the layer output before
     // sigmoid is applied)
-    const int numLayers = layers_.size();
     std::vector<Matrix> activations;
     std::vector<Matrix> zVectors;
-    activations.resize(numLayers + 1);
+    const int numLayers = layers_.size();
+    activations.resize(numLayers);
     zVectors.resize(numLayers);
+
+    Matrix in;
+    in.fromVector(input);
 
     // Feed-forward pass. This will record the activation and z vectors for
     // all the layers
-    activations[0].fromVector(input);
     for(int l = 0; l < numLayers; ++l)
     {
-        activations[l + 1] = layers_[l].forward(activations[l], &zVectors[l]);
+        const auto& a = (l == 0) ? in : activations[l - 1];
+        activations[l] = layers_[l].forward(a, &zVectors[l]);
     }
 
-    auto retval = zeroCopy();
     //remove-me
 //    std::cout << retval.back().size() << " " << retval.back().inputs() << std::endl;
 //    exit(0);
@@ -93,8 +104,11 @@ std::vector<Layer> Network::backward(
     {
         if(i == numLayers - 1)
         {
-            delta.resize(activations[i + 1].rows(), 1, false);
-            delta.apply(Trainer(activations[i + 1], zVectors[i], output));
+            delta.resize(activations[i].rows(), 1, false);
+            delta.apply(CostDerivative(activations[i], zVectors[i], output));
+            //remove-me
+            std::cout << delta;
+            exit(0);
         }
         else
         {
@@ -111,6 +125,76 @@ std::vector<Layer> Network::backward(
     }
 
     return retval;
+}
+
+void Network::testBack(
+        const Matrix& nabla_b1,
+        const Matrix& nabla_w1,
+        const Matrix& nabla_b2,
+        const Matrix& nabla_w2,
+        const Matrix& x,
+        const Matrix& y
+        ) const
+{
+    auto retval = zeroCopy();
+
+    // Feed the input forward through the network, recording the layer
+    // activations as we go, as well as the z vectors (the layer output before
+    // sigmoid is applied)
+    std::vector<Matrix> activations;
+    std::vector<Matrix> zVectors;
+    const int numLayers = layers_.size();
+    activations.resize(numLayers);
+    zVectors.resize(numLayers);
+
+    Matrix in = x;
+
+    // Feed-forward pass. This will record the activation and z vectors for
+    // all the layers
+    for(int l = 0; l < numLayers; ++l)
+    {
+        const auto& a = (l == 0) ? in : activations[l - 1];
+        activations[l] = layers_[l].forward(a, &zVectors[l]);
+    }
+
+    Matrix delta;
+    for(int i = numLayers - 1; i >= 0; --i)
+    {
+        if(i == numLayers - 1)
+        {
+            delta.resize(activations[i].rows(), 1, false);
+            delta.apply(CostDerivative(activations[i], zVectors[i], y.toVector()));
+        }
+        else
+        {
+            auto sp = zVectors[i];
+            sp.apply([](int,int,fpt v){ return sigmoidPrime(v); });
+
+            auto l = layers_[i + 1].weights().transpose();
+            delta  = l.multiply(delta);
+            delta.apply([&](int r, int c, fpt v){ return v * sp.value(r, c); });
+        }
+
+        retval[i].setBiases(delta);
+        retval[i].setWeights(delta.multiply(activations[i].transpose()));
+
+        //remove-me
+        if(i == 0)
+        {
+            assert(retval[i].biases().isEqual(nabla_b1));
+            assert(retval[i].weights().isEqual(nabla_w1));
+        }
+        else if(i == 1)
+        {
+            assert(retval[i].biases().isEqual(nabla_b2));
+            assert(retval[i].weights().isEqual(nabla_w2));
+        }
+        else
+        {
+            assert(!"what?");
+        }
+    }
+    std::cout << "All good" << std::endl;
 }
 
 // Train the network using stochastic gradient descent

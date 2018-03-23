@@ -17,6 +17,8 @@ public:
     int size() const   { return weights_.rows(); }
     int inputs() const { return weights_.cols(); }
 
+    void verify(const Matrix& biases, const Matrix& weights) const;
+
     // Feed the input forward through this layer and return the output. If the
     // z parameter is provided then it will be filled in with the output values
     // before the sigmoid function has been applied.
@@ -33,7 +35,7 @@ public:
     // Element-wise update of biases and weights from training output. Results
     // stored in this. The factor is the learning rate divded by the number of
     // training images that went into the update layer
-    void update(const Layer& l, fpt factor);
+    void applyUpdate(const Layer& l, fpt factor);
 
 private:
     // The bias matrix will be a single column

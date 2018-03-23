@@ -2,7 +2,6 @@
 #define FUNCS_H
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <iostream>
 
@@ -24,5 +23,7 @@ void hardMax(fpt_vect& a);
 Matrix pythonRead(std::istream& is);
 
 std::ostream& operator << (std::ostream& os, const fpt_vect& v);
+
+#define assert(x) if(!(x)){ std::cerr << "assert fail: " << (#x) << std::endl; throw std::runtime_error(std::string(#x)); }
 
 #endif // FUNCS_H

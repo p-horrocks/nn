@@ -13,6 +13,7 @@ public:
 
     int rows() const { return rows_; }
     int cols() const { return cols_; }
+    std::string shape() const;
 
     fpt value(int r, int c) const { return m_[c + (r * cols_)]; }
     void set(int r, int c, fpt v);
@@ -39,7 +40,9 @@ public:
     // assigned to each element. Function takes in row, column, value
     void apply(const std::function<fpt (int, int, fpt)>& f);
 
-    bool isEqual(const Matrix* o, fpt eps = 1e-10) const;
+    // This is only used for testing. The epsilon must be large enough to
+    // allow for the precision lost by the serialisation of the data
+    bool isEqual(const Matrix& o, fpt eps = 1e-6) const;
 
 private:
     int rows_ = 0;

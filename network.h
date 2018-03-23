@@ -9,7 +9,9 @@ class Network
 public:
     Network(const std::initializer_list<fpt>& init);
 
+    const Layer& layer(int idx) const { return layers_[idx]; }
     void setLayer(int idx, const Matrix& biases, const Matrix& weights);
+    void verifyLayer(int idx, const Matrix& biases, const Matrix& weights);
 
     // Evaluates the network output for the given input
     fpt_vect forward(const fpt_vect& input) const;
@@ -18,15 +20,6 @@ public:
     std::vector<Layer> backward(
             const fpt_vect& input,
             const fpt_vect& output
-            ) const;
-
-    void testBack(
-            const Matrix& nabla_b1,
-            const Matrix& nabla_w1,
-            const Matrix& nabla_b2,
-            const Matrix& nabla_w2,
-            const Matrix& x,
-            const Matrix& y
             ) const;
 
     // Train the network using stochastic gradient descent
@@ -39,11 +32,12 @@ public:
             );
 
     // Train the network on a batch of MNIST images
-    void trainMNIST_SGD_batch(
+    std::vector<Layer> create_SGD_update(
             std::vector<Mnist::ImagePtr>::const_iterator begin,
-            std::vector<Mnist::ImagePtr>::const_iterator end,
-            fpt rate
-            );
+            std::vector<Mnist::ImagePtr>::const_iterator end
+            ) const;
+
+    void applyUpdate(const std::vector<Layer>& nabla, fpt rate, fpt nImages);
 
     // Returns true if the network correctly outputs the image label
     bool evaluate(const Mnist::ImagePtr& img) const;

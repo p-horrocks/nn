@@ -1,11 +1,20 @@
 #include "matrix.h"
 
+#include <sstream>
+
 Matrix::Matrix(const Matrix& o)
 {
     rows_ = o.rows_;
     cols_ = o.cols_;
     m_.resize(rows_ * cols_);
     std::copy(o.m_.begin(), o.m_.end(), m_.begin());
+}
+
+std::string Matrix::shape() const
+{
+    std::ostringstream os;
+    os << "[ " << rows_ << " x " << cols_ << " ]";
+    return os.str();
 }
 
 void Matrix::set(int r, int c, fpt v)
@@ -107,26 +116,29 @@ void Matrix::add(const Matrix& a)
 void Matrix::apply(const std::function<fpt (int, int, fpt)>& f)
 {
     int n = 0;
-    for(int j = 0; j < cols_; ++j)
+    for(int i = 0; i < rows_; ++i)
     {
-        for(int i = 0; i < rows_; ++i, ++n)
+        for(int j = 0; j < cols_; ++j, ++n)
         {
             m_[n] = f(i, j, m_[n]);
         }
     }
 }
 
-bool Matrix::isEqual(const Matrix* o, fpt eps) const
+bool Matrix::isEqual(const Matrix& o, fpt eps) const
 {
-    if(o->rows_ != rows_)
+    if(o.rows_ != rows_)
         return false;
 
-    if(o->cols_ != cols_)
+    if(o.cols_ != cols_)
         return false;
 
     for(int i = 0; i < m_.size(); ++i)
     {
-        if(std::fabs(m_[i] - o->m_[i]) > eps)
+        if(std::isnan(m_[i]) ^ std::isnan(o.m_[i]))
+            return false;
+
+        if(std::fabs(m_[i] - o.m_[i]) > eps)
             return false;
     }
     return true;

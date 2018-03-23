@@ -20,6 +20,12 @@ void Layer::setWeights(const Matrix& v)
     weights_ = v;
 }
 
+void Layer::verify(const Matrix& biases, const Matrix& weights) const
+{
+    assert(biases_.isEqual(biases));
+    assert(weights_.isEqual(weights));
+}
+
 Matrix Layer::forward(const Matrix& input, Matrix* z) const
 {
     auto output = weights_.multiply(input);
@@ -44,10 +50,11 @@ void Layer::add(const Layer& l)
     weights_.add(l.weights_);
 }
 
-void Layer::update(const Layer& l, fpt factor)
+void Layer::applyUpdate(const Layer& l, fpt factor)
 {
     auto b = [&](int r, int c, fpt v){ return v - (factor * l.biases_.value(r, c)); };
     auto w = [&](int r, int c, fpt v){ return v - (factor * l.weights_.value(r, c)); };
+
     biases_.apply(b);
     weights_.apply(w);
 }

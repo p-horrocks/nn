@@ -14,8 +14,8 @@ public:
     {
         int rows;
         int cols;
-        std::vector<fpt> data;
-        std::vector<fpt> label;
+        fpt_vect data;
+        fpt_vect label;
     };
     typedef std::shared_ptr<Image> ImagePtr;
 

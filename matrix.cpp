@@ -43,7 +43,7 @@ void Matrix::resize(int rows, int cols, bool randomise)
     m_.resize(rows * cols);
     if(randomise)
     {
-        std::generate(m_.begin(), m_.end(), &normalRand);
+        std::generate(m_.begin(), m_.end(), [&](){ return normalRand(cols); });
     }
     else
     {

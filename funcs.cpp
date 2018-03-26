@@ -7,9 +7,8 @@
 #include "matrix.h"
 
 std::default_random_engine* __gen = nullptr;
-std::normal_distribution<fpt> __dist(0.f, 1.f);
 
-fpt normalRand()
+fpt normalRand(fpt n)
 {
     if(!__gen)
     {
@@ -18,7 +17,8 @@ fpt normalRand()
         __gen = new std::default_random_engine(t.tv_usec);
     }
 
-    return __dist(*__gen);
+    std::normal_distribution<fpt> d(0.f, 1.f / std::sqrt(n));
+    return d(*__gen);
 }
 
 fpt sigmoid(fpt z)

@@ -34,8 +34,11 @@ private:
 
 } // namespace
 
-Network::Network(const std::initializer_list<fpt>& init)
+Network::Network(const std::initializer_list<fpt>& init, const AbstractCostPtr cost) :
+    cost_(cost)
 {
+    assert(cost_);
+
     layers_.reserve(init.end() - init.begin());
 
     int prevSize = 0;
@@ -104,16 +107,15 @@ std::vector<Layer> Network::backward(
     Matrix delta;
     for(int i = numLayers - 1; i >= 0; --i)
     {
-        auto sp = zVectors[i];
-        sp.apply([](int,int,fpt v){ return sigmoidPrime(v); });
-
         if(i == numLayers - 1)
         {
-            delta.resize(activations[i].rows(), 1, false);
-            delta.apply(CostDerivative(activations[i], sp, output));
+            delta = cost_->outputError(zVectors[i], activations[i], output);
         }
         else
         {
+            auto sp = zVectors[i];
+            sp.apply([](int,int,fpt v){ return sigmoidPrime(v); });
+
             auto l = layers_[i + 1].weights().transpose();
             delta  = l.multiply(delta);
             delta.apply([&](int r, int c, fpt v){ return v * sp.value(r, c); });

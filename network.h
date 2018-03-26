@@ -1,13 +1,14 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include "cost.h"
 #include "layer.h"
 #include "mnist.h"
 
 class Network
 {
 public:
-    Network(const std::initializer_list<fpt>& init);
+    Network(const std::initializer_list<fpt>& init, const AbstractCostPtr cost);
 
     const Layer& layer(int idx) const { return layers_[idx]; }
     void setLayer(int idx, const Matrix& biases, const Matrix& weights);
@@ -47,6 +48,7 @@ public:
 
 private:
     std::vector<Layer> layers_;
+    AbstractCostPtr cost_;
 };
 
 #endif // NETWORK_H

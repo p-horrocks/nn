@@ -15,7 +15,7 @@ public:
     int cols() const { return cols_; }
     std::string shape() const;
 
-    fpt value(int r, int c) const { return m_[c + (r * cols_)]; }
+    fpt value(int r, int c) const;
     void set(int r, int c, fpt v);
 
     void appendRow(const fpt_vect& row);

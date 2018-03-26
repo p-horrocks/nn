@@ -17,6 +17,13 @@ std::string Matrix::shape() const
     return os.str();
 }
 
+fpt Matrix::value(int r, int c) const
+{
+    assert((r >= 0) && (r < rows_));
+    assert((c >= 0) && (c < cols_));
+    return m_[c + (r * cols_)];
+}
+
 void Matrix::set(int r, int c, fpt v)
 {
     m_[c + (r * cols_)] = v;

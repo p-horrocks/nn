@@ -50,10 +50,10 @@ void Layer::add(const Layer& l)
     weights_.add(l.weights_);
 }
 
-void Layer::applyUpdate(const Layer& l, fpt factor)
+void Layer::applyUpdate(const Layer& l, fpt decay, fpt factor)
 {
-    auto b = [&](int r, int c, fpt v){ return v - (factor * l.biases_.value(r, c)); };
-    auto w = [&](int r, int c, fpt v){ return v - (factor * l.weights_.value(r, c)); };
+    auto b = [&](int r, int c, fpt v){ return (v * decay) - (factor * l.biases_.value(r, c)); };
+    auto w = [&](int r, int c, fpt v){ return (v * decay) - (factor * l.weights_.value(r, c)); };
 
     biases_.apply(b);
     weights_.apply(w);

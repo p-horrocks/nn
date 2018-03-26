@@ -134,14 +134,15 @@ void Network::trainMNIST_SGD(
         int epochs,    // number of rounds of training
         int batchSize, // number of images per training round
         fpt rate,      // learning rate
+        fpt lambda,    // regularisation lambda value (0=no regularisation)
         const Mnist& trainingData,
         const Mnist& testData
         )
 {
+    auto in = trainingData.images();
     for(int e = 0; e < epochs; ++e)
     {
         // Randomise the order of the training images
-        auto in = trainingData.images();
         std::random_shuffle(in.begin(), in.end());
 
         // Update the network using batches of images
@@ -151,7 +152,7 @@ void Network::trainMNIST_SGD(
             int batchEnd = std::min<int>(in.size(), batchStart + batchSize);
 
             auto nabla = create_SGD_update(in.begin() + batchStart, in.begin() + batchEnd);
-            applyUpdate(nabla, rate, batchSize);
+            applyUpdate(nabla, rate, lambda, batchSize, in.size());
 
             batchStart = batchEnd;
         }
@@ -194,12 +195,13 @@ std::vector<Layer> Network::create_SGD_update(
     return nabla;
 }
 
-void Network::applyUpdate(const std::vector<Layer>& nabla, fpt rate, fpt nImages)
+void Network::applyUpdate(const std::vector<Layer>& nabla, fpt rate, fpt lambda, fpt batchSize, fpt nImages)
 {
-    const fpt factor = rate / nImages;
+    const fpt factor = rate / batchSize;
+    const fpt decay  = 1 - (rate * lambda / nImages);
     for(int l = 0; l < nabla.size(); ++l)
     {
-        layers_[l].applyUpdate(nabla[l], factor);
+        layers_[l].applyUpdate(nabla[l], decay, factor);
     }
 }
 

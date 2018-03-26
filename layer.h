@@ -35,7 +35,7 @@ public:
     // Element-wise update of biases and weights from training output. Results
     // stored in this. The factor is the learning rate divded by the number of
     // training images that went into the update layer
-    void applyUpdate(const Layer& l, fpt factor);
+    void applyUpdate(const Layer& l, fpt decay, fpt factor);
 
 private:
     // The bias matrix will be a single column

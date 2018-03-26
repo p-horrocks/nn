@@ -28,6 +28,7 @@ public:
             int epochs,    // number of rounds of training
             int batchSize, // number of images per training round
             fpt rate,      // learning rate
+            fpt lambda,    // regularisation lambda value (0=no regularisation)
             const Mnist& trainingData,
             const Mnist& testData
             );
@@ -38,7 +39,7 @@ public:
             std::vector<Mnist::ImagePtr>::const_iterator end
             ) const;
 
-    void applyUpdate(const std::vector<Layer>& nabla, fpt rate, fpt nImages);
+    void applyUpdate(const std::vector<Layer>& nabla, fpt rate, fpt lambda, fpt batchSize, fpt nImages);
 
     // Returns true if the network correctly outputs the image label
     bool evaluate(const Mnist::ImagePtr& img) const;

@@ -18,7 +18,7 @@ int main()
 
     // Single layer NN to take in the MNIST images and generate 10 outputs -
     // the probability that each image is a corresponding digit
-    Network net({784, 30, 10}, std::make_shared<CrossEntropyCost>());
+    Network net({784, 100, 10}, std::make_shared<CrossEntropyCost>());
 
 /*remove-me
     {
@@ -94,7 +94,7 @@ int main()
         std::cout << "SGD_update() test successful" << std::endl;
     }
 //*/
-    net.trainMNIST_SGD(30, 10, 3.f, train, test);
+    net.trainMNIST_SGD(30, 10, .5f, 5.f, train, test);
 
     return 0;
 }

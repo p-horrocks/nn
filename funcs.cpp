@@ -4,9 +4,34 @@
 #include <sstream>
 #include <sys/time.h>
 
-#include "matrix.h"
+#include "mnist.h"
+#include "network.h"
 
 std::default_random_engine* __gen = nullptr;
+
+void customImpl()
+{
+    Mnist train;
+    int n1 = train.loadTrainingData();
+
+    Mnist eval;
+    int n2 = eval.loadEvaluationData();
+
+    Mnist test;
+    int n3 = test.loadTestData();
+
+    std::cout << "loaded " << n1 << " training, " << n2 << " eval and " << n3 << " test images" << std::endl;
+
+    // Single layer NN to take in the MNIST images and generate 10 outputs -
+    // the probability that each image is a corresponding digit
+    Network net({784, 30, 10}, std::make_shared<CrossEntropyCost>());
+
+    const int epochs    = 30;
+    const int batchSize = 10;
+    const fpt learnRate = .5f;
+    const fpt lambda    = 5.f;
+    net.trainMNIST_SGD(epochs, batchSize, learnRate, lambda, train, test);
+}
 
 fpt normalRand(fpt n)
 {

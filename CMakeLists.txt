@@ -10,4 +10,5 @@ add_executable(${PROJECT_NAME}
     matrix.cpp
     mnist.cpp
     network.cpp
+    tf.cpp
     )

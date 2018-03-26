@@ -8,6 +8,8 @@
 #include "type.h"
 class Matrix;
 
+void customImpl();
+
 fpt normalRand(fpt n);
 fpt sigmoid(fpt z);
 fpt sigmoidPrime(fpt z);
